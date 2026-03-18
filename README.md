@@ -103,7 +103,7 @@ npm run dev:web
 ## Project structure
 
 ```
-Elevator-Challenge/
+my-api-v3/
 ├── src/
 │   ├── Api/                    # .NET Web API
 │   │   ├── Elevator/

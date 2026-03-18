@@ -9,8 +9,8 @@ test.describe("Medium", () => {
     await expect(
       page.getByRole("heading", { name: /Medium — 4 Elevators/ }),
     ).toBeVisible();
-    await expect(page.getByText("E1")).toBeVisible();
-    await expect(page.getByText("E4")).toBeVisible();
+    await expect(page.getByTestId("elevator-cab-1")).toBeVisible();
+    await expect(page.getByTestId("elevator-cab-4")).toBeVisible();
   });
 
   test("request trip", async ({ page }) => {

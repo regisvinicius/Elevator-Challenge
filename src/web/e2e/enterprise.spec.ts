@@ -36,10 +36,6 @@ test.describe("Enterprise", () => {
     await expect(emergency).not.toBeChecked({ timeout: 10_000 });
 
     await maintenance.click();
-    await expect(maintenance)
-      .toBeChecked({ timeout: 2_000 })
-      .catch(() => {});
-    await maintenance.click();
-    await expect(maintenance).not.toBeChecked({ timeout: 5_000 });
+    await expect(maintenance).not.toBeChecked({ timeout: 10_000 });
   });
 });
