@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --color-accent: oklch(0.55 0.2 250);
+  --color-accent-hover: oklch(0.45 0.22 250);
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50 font-sans antialiased text-slate-800 dark:bg-slate-950 dark:text-slate-200;
+  }
+}
