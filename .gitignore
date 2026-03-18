@@ -1,0 +1,15 @@
+bin/
+obj/
+.ai-kit/
+node_modules/
+
+# Allow .github (overrides global ~/.gitignore_global)
+!.github/
+
+# Markdown files (ignored in cloned projects)
+*.md
+# Exceptions: plan/report artifacts visible in git for review
+!README.md
+!plans/current-plan.md
+!plans/delivery-summary.md
+!plans/requirements-report.md
