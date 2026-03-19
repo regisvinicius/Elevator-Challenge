@@ -103,7 +103,7 @@ npm run dev:web
 ## Project structure
 
 ```
-my-api-v3/
+Elevator-Challenge/
 ├── src/
 │   ├── Api/                    # .NET Web API
 │   │   ├── Elevator/
@@ -307,7 +307,7 @@ GitHub Actions runs on every push/PR to `main`:
 6. Unit tests (.NET + Vitest)  
 7. Playwright E2E tests  
 
-Config: `.github/workflows/ci.yml`
+Config: `.github/workflows/main.yml`
 
 ---
 

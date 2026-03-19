@@ -1,73 +1,123 @@
-# React + TypeScript + Vite
+# Elevator Challenge — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React dashboard for the Elevator Challenge API: visualizes single-elevator (Easy), multi-elevator (Medium), and enterprise systems with real-time status, trip forms, and controls.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Tech stack
 
-## React Compiler
+- **React 19** + **Vite 8** + **TypeScript**
+- **Tailwind CSS 4**
+- **TanStack Router** (client-side routing)
+- **TanStack Query** (API fetching, caching)
+- **Radix UI** (Switch, Select, Label, Tabs)
+- **Zod** (API response validation)
+- **Sonner** (toasts)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## Routes
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+| Route | Description |
+|-------|-------------|
+| `/easy` | Single elevator (1–10 floors). Request elevator, set destination, process queue step-by-step. |
+| `/medium` | 4 elevators (1–20 floors). Request trips; queue report; automatic dispatch. |
+| `/enterprise` | 5 elevators with types (1–30 floors). VIP trips, maintenance toggle, emergency stop, analytics panel. |
+| `/concurrency` | Stress testing: fire burst of trips to test system under load. |
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Project structure
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+src/
+├── main.tsx              # App entry: QueryClient, Router
+├── router.tsx            # TanStack Router config, route definitions
+├── index.css             # Tailwind, base styles
+├── api/
+│   ├── elevator-api.ts   # API client (fetch, Zod validation)
+│   └── elevator-api.test.ts
+├── routes/
+│   ├── __root.tsx        # Root layout, nav, health
+│   ├── easy.tsx
+│   ├── medium.tsx
+│   ├── enterprise.tsx
+│   └── concurrency.tsx
+├── components/
+│   ├── building-view.tsx     # Elevator shafts visualization
+│   ├── elevator-shaft.tsx    # Single shaft + cab
+│   ├── trip-form.tsx        # Pickup/destination, VIP checkbox
+│   ├── queue-report.tsx     # Pending requests per elevator
+│   ├── elevator-controls.tsx # Maintenance, emergency switches
+│   ├── analytics-panel.tsx  # Enterprise metrics
+│   ├── stress-test-panel.tsx # Concurrency fire buttons
+│   ├── health-indicator.tsx # API health status
+│   ├── dark-mode-toggle.tsx
+│   └── ...
+├── contexts/
+│   ├── api-health.tsx    # Polls /health, exposes isOnline
+│   └── theme.tsx         # Dark/light theme
+└── types/
+    └── elevator.ts       # Direction, ElevatorState, status types
+e2e/
+├── easy.spec.ts
+├── medium.spec.ts
+├── enterprise.spec.ts
+├── concurrency.spec.ts
+├── health.spec.ts
+└── global.spec.ts
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Configuration
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Create `.env` (or copy `.env.example`):
+
 ```
+VITE_API_URL=http://localhost:5050
+```
+
+Defaults to `http://localhost:5050` if unset.
+
+---
+
+## How to run
+
+```bash
+# From project root (starts API + web)
+npm run dev
+
+# From src/web (frontend only)
+cd src/web && npm run dev
+```
+
+- Frontend: http://localhost:5173
+- API: http://localhost:5050 (must be running for full functionality)
+
+---
+
+## Tests
+
+```bash
+# Unit (Vitest)
+npm run test:unit
+
+# E2E (Playwright — requires dev server)
+npm run test:e2e
+```
+
+E2E starts `npm run dev` from project root if no server is running. Install Playwright browsers: `npx playwright install chromium`.
+
+---
+
+## Key components
+
+| Component | Purpose |
+|-----------|---------|
+| `BuildingView` | Renders elevator shafts for single/system/enterprise modes |
+| `ElevatorShaft` | One shaft with floor cells and animated cab |
+| `TripForm` | Pickup/destination inputs, optional VIP (enterprise) |
+| `QueueReport` | Shows pending requests per elevator |
+| `ElevatorControls` | Maintenance switch, emergency stop (enterprise) |
+| `AnalyticsPanel` | Total trips, per-elevator stats |

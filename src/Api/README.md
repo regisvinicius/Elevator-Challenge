@@ -1,6 +1,6 @@
 # Elevator Challenge — Backend API
 
-API .NET minimal (ASP.NET Core 10) que implementa um sistema de elevadores em três níveis de complexidade: Easy (1 elevador), Medium (múltiplos elevadores) e Hard (enterprise com tipos, VIP e manutenção).
+Minimal .NET API (ASP.NET Core 10) implementing an elevator system with three levels of complexity: Easy (1 elevator), Medium (multiple elevators), and Hard (enterprise with types, VIP, and maintenance).
 
 ---
 
@@ -9,42 +9,42 @@ API .NET minimal (ASP.NET Core 10) que implementa um sistema de elevadores em tr
 - **.NET 10**
 - **ASP.NET Core** (Minimal APIs)
 - **Swagger/OpenAPI** (Swashbuckle)
-- **CORS** habilitado para frontend em `http://localhost:5173`
+- **CORS** enabled for frontend at `http://localhost:5173`
 
 ---
 
-## Arquitetura
+## Architecture
 
-O backend expõe **três subsistemas** em paralelo, cada um correspondendo a um nível do desafio:
+The backend exposes **three subsystems** in parallel, each corresponding to a challenge level:
 
-| Nível | Subsistema | Andares | Elevadores | Algoritmo |
-|-------|-------------|---------|------------|-----------|
+| Level | Subsystem | Floors | Elevators | Algorithm |
+|-------|-----------|--------|-----------|-----------|
 | **Easy** | Single elevator | 1–10 | 1 | FIFO |
-| **Medium** | Multi-elevator | 1–20 | 4 | Dispatcher (distância + direção + carga) |
-| **Hard** | Enterprise | 1–30 | 5 (tipos mistos) | LOOK + prioridade VIP |
+| **Medium** | Multi-elevator | 1–20 | 4 | Dispatcher (distance + direction + load) |
+| **Hard** | Enterprise | 1–30 | 5 (mixed types) | LOOK + VIP priority |
 
 ---
 
-## Estrutura de pastas
+## Project structure
 
 ```
 Api/
-├── Program.cs                 # Endpoints e wiring
+├── Program.cs                 # Endpoints and wiring
 ├── Elevator/
 │   ├── Easy/
-│   │   └── ElevatorController.cs   # 1 elevador, FIFO
+│   │   └── ElevatorController.cs   # 1 elevator, FIFO
 │   ├── Medium/
-│   │   ├── ElevatorSystem.cs       # 4 elevadores, dispatch
-│   │   └── ElevatorDispatcher.cs   # Seleção de melhor elevador
+│   │   ├── ElevatorSystem.cs       # 4 elevators, dispatch
+│   │   └── ElevatorDispatcher.cs   # Best elevator selection
 │   ├── Hard/
 │   │   ├── EnterpriseElevatorSystem.cs
-│   │   ├── EnterpriseElevator.cs   # Tipos, andares restritos, LOOK
+│   │   ├── EnterpriseElevator.cs   # Types, floor restrictions, LOOK
 │   │   ├── ElevatorType.cs
 │   │   └── PerformanceMetrics.cs
 │   └── Shared/
 │       ├── Direction.cs
 │       ├── ElevatorState.cs
-│       ├── Elevator.cs             # Elevador base
+│       ├── Elevator.cs             # Base elevator
 │       ├── Request.cs
 │       ├── ITimeProvider.cs
 │       └── SystemTimeProvider.cs
@@ -55,107 +55,107 @@ Api/
 
 ## Endpoints
 
-### Saúde
+### Health
 
-| Método | Rota | Descrição |
-|--------|------|-----------|
-| `GET` | `/health` | Status da API + timestamp UTC |
+| Method | Route | Description |
+|--------|------|-------------|
+| `GET` | `/health` | API status + UTC timestamp |
 
 ---
 
-### Easy — Elevador único (andares 1–10)
+### Easy — Single elevator (floors 1–10)
 
-| Método | Rota | Body | Descrição |
-|--------|------|------|-----------|
-| `GET` | `/elevator/single/status` | — | `floor`, `state` do elevador |
-| `POST` | `/elevator/single/request` | `{ floor, direction }` | Chamada no andar (Up/Down) |
-| `POST` | `/elevator/single/destination` | `{ floor }` | Destino a partir do interior |
-| `POST` | `/elevator/single/process` | — | Processa a fila (passo a passo) |
+| Method | Route | Body | Description |
+|--------|------|------|-------------|
+| `GET` | `/elevator/single/status` | — | `floor`, `state` of elevator |
+| `POST` | `/elevator/single/request` | `{ floor, direction }` | Call from floor (Up/Down) |
+| `POST` | `/elevator/single/destination` | `{ floor }` | Destination from inside cab |
+| `POST` | `/elevator/single/process` | — | Process the queue (step-by-step) |
 
 **Request body:** `{ "floor": 3, "direction": "Up" }` (enum `Up` / `Down`)
 
 ---
 
-### Medium — Sistema multi-elevador (andares 1–20)
+### Medium — Multi-elevator system (floors 1–20)
 
-| Método | Rota | Body | Descrição |
-|--------|------|------|-----------|
-| `GET` | `/elevator/system/status` | — | Status dos 4 elevadores |
-| `POST` | `/elevator/system/trip` | `{ pickupFloor, destinationFloor }` | Viagem completa |
-| `POST` | `/elevator/system/request` | `{ floor, direction }` | Chamada no andar |
+| Method | Route | Body | Description |
+|--------|------|------|-------------|
+| `GET` | `/elevator/system/status` | — | Status of all 4 elevators |
+| `POST` | `/elevator/system/trip` | `{ pickupFloor, destinationFloor }` | Full trip |
+| `POST` | `/elevator/system/request` | `{ floor, direction }` | Call from floor |
 
-**Resposta de status:** `[{ id, currentFloor, state, pendingRequestCount, targetFloors }]`
-
----
-
-### Hard — Enterprise (andares 1–30)
-
-| Método | Rota | Body | Descrição |
-|--------|------|------|-----------|
-| `GET` | `/elevator/enterprise/status` | — | Status dos 5 elevadores (com tipo e andares permitidos) |
-| `GET` | `/elevator/enterprise/analytics` | — | Métricas (total de viagens, por elevador) |
-| `POST` | `/elevator/enterprise/trip` | `{ pickupFloor, destinationFloor, isVip? }` | Viagem (VIP opcional) |
-| `POST` | `/elevator/enterprise/request` | `{ floor, direction, isVip? }` | Chamada no andar |
-| `POST` | `/elevator/enterprise/maintenance/{id}` | `{ enabled }` | Liga/desliga manutenção |
-| `POST` | `/elevator/enterprise/emergency-stop/{id}` | — | Para emergência |
-| `POST` | `/elevator/enterprise/clear-emergency/{id}` | — | Cancela parada de emergência |
-
-**Frota padrão:**
-
-- Elevador 1, 2: `Local` (todos os andares)
-- Elevador 3, 5: `Express` (1, 10, 20, 30)
-- Elevador 4: `Freight` (todos os andares)
+**Status response:** `[{ id, currentFloor, state, pendingRequestCount, targetFloors }]`
 
 ---
 
-## Lógica de dispatch
+### Hard — Enterprise (floors 1–30)
+
+| Method | Route | Body | Description |
+|--------|------|------|-------------|
+| `GET` | `/elevator/enterprise/status` | — | Status of all 5 elevators (with type and allowed floors) |
+| `GET` | `/elevator/enterprise/analytics` | — | Metrics (total trips, per elevator) |
+| `POST` | `/elevator/enterprise/trip` | `{ pickupFloor, destinationFloor, isVip? }` | Trip (VIP optional) |
+| `POST` | `/elevator/enterprise/request` | `{ floor, direction, isVip? }` | Call from floor |
+| `POST` | `/elevator/enterprise/maintenance/{id}` | `{ enabled }` | Toggle maintenance |
+| `POST` | `/elevator/enterprise/emergency-stop/{id}` | — | Emergency stop |
+| `POST` | `/elevator/enterprise/clear-emergency/{id}` | — | Clear emergency stop |
+
+**Default fleet:**
+
+- Elevators 1, 2: `Local` (all floors)
+- Elevators 3, 5: `Express` (1, 10, 20, 30)
+- Elevator 4: `Freight` (all floors)
+
+---
+
+## Dispatch logic
 
 ### Easy (FIFO)
 
-- Uma fila simples; pedidos atendidos na ordem em que chegam.
+- Single queue; requests served in the order they arrive.
 
 ### Medium (Dispatcher)
 
-O `ElevatorDispatcher` calcula um **score** por elevador:
+The `ElevatorDispatcher` computes a **score** per elevator:
 
-- **Distância** ao andar de pickup
-- **Bônus** se o elevador já estiver indo na direção do passageiro
-- **Penalidade** pela carga (número de pedidos pendentes)
-- **Bônus de idade** para evitar starvation de pedidos antigos
+- **Distance** to pickup floor
+- **Bonus** if elevator is already moving toward the passenger
+- **Penalty** for load (number of pending requests)
+- **Age bonus** to avoid starvation of older requests
 
-O elevador com menor score é escolhido.
+The elevator with the lowest score is selected.
 
 ### Hard (Enterprise)
 
-- **VIP:** fila separada com prioridade
-- **Tipos:** só elevadores que atendem ambos os andares (pickup e destino)
-- **Score:** distância + direção + carga + prioridade VIP
-- **LOOK:** próximo alvo na direção atual; inversão apenas ao não haver alvos à frente
+- **VIP:** separate queue with priority
+- **Types:** only elevators that serve both pickup and destination floors
+- **Score:** distance + direction + load + VIP priority
+- **LOOK:** next target in current direction; reverse only when no targets ahead
 
 ---
 
-## Estados do elevador
+## Elevator states
 
-| Estado | Descrição |
-|--------|-----------|
-| `Idle` | Parado, sem pedidos |
-| `MovingUp` | Subindo |
-| `MovingDown` | Descendo |
-| `DoorOpening` | Porta abrindo |
-| `DoorOpen` | Porta aberta |
-| `DoorClosing` | Porta fechando |
-| `Maintenance` | Em manutenção (Hard) |
-| `EmergencyStopped` | Parada de emergência (Hard) |
+| State | Description |
+|--------|-------------|
+| `Idle` | Stopped, no requests |
+| `MovingUp` | Moving up |
+| `MovingDown` | Moving down |
+| `DoorOpening` | Door opening |
+| `DoorOpen` | Door open |
+| `DoorClosing` | Door closing |
+| `Maintenance` | Under maintenance (Hard) |
+| `EmergencyStopped` | Emergency stop (Hard) |
 
 ---
 
-## Como executar
+## How to run
 
 ```bash
-# Na raiz do projeto
+# From project root
 dotnet run --project src/Api/Api.csproj --urls http://localhost:5050
 
-# Ou via npm
+# Or via npm
 npm run dev:api
 ```
 
@@ -164,23 +164,23 @@ npm run dev:api
 
 ---
 
-## Configuração
+## Configuration
 
-| Variável | Padrão | Descrição |
-|----------|--------|-----------|
-| `ApplicationUrl` | `http://localhost:5050` | URL da API (launchSettings) |
-| CORS | `http://localhost:5173` | Origem permitida (frontend Vite) |
-| Andares Easy | 1–10 | `ElevatorController` |
-| Andares Medium | 1–20 | `ElevatorSystem` |
-| Andares Hard | 1–30 | `EnterpriseElevatorSystem` |
-| Timeout “stuck” | 30s | Reinício de elevador travado |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ApplicationUrl` | `http://localhost:5050` | API URL (launchSettings) |
+| CORS | `http://localhost:5173` | Allowed origin (Vite frontend) |
+| Easy floors | 1–10 | `ElevatorController` |
+| Medium floors | 1–20 | `ElevatorSystem` |
+| Hard floors | 1–30 | `EnterpriseElevatorSystem` |
+| Stuck timeout | 30s | Reset for stuck elevator |
 
 ---
 
-## Testes
+## Tests
 
 ```bash
 dotnet test
 ```
 
-Os testes unitários e de integração estão em `Api.Tests/` e usam `TestTimeProvider` para controlar o tempo e acelerar cenários assíncronos.
+Unit and integration tests are in `Api.Tests/` and use `TestTimeProvider` to control time and speed up async scenarios.
